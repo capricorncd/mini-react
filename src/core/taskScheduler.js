@@ -4,6 +4,8 @@ import { ELEMENT_TYPES } from './React';
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback
 let nextTaskOfUnit = null;
 
+let root = null;
+
 export function render(el, container) {
   nextTaskOfUnit = {
     dom: container,
@@ -11,6 +13,7 @@ export function render(el, container) {
       children: [el]
     }
   };
+  root = nextTaskOfUnit;
 }
 
 function taskScheduler(idleDeadline) {
@@ -18,10 +21,28 @@ function taskScheduler(idleDeadline) {
   while (!shouldYield && nextTaskOfUnit) {
     // run task
     nextTaskOfUnit = runTask(nextTaskOfUnit);
-    // dom render
     shouldYield = idleDeadline.timeRemaining() < 1;
   }
+  // 所有节点task处理完成，并root存在
+  if (!nextTaskOfUnit && root) {
+    appendToContainer();
+  }
+
   requestIdleCallback(taskScheduler);
+}
+
+// 浏览器闲置时执行。长时间的任务时，无闲置时间时的优化？
+// 子节点渲染结束后，统一添加到父节点
+function appendToContainer() {
+  commitFiber(root.child);
+  root = null;
+}
+
+function commitFiber(fiber) {
+  if (!fiber) return;
+  fiber.parent.dom.append(fiber.dom);
+  commitFiber(fiber.child);
+  commitFiber(fiber.sibling);
 }
 
 function createDOM(type) {
@@ -62,7 +83,6 @@ function runTask(fiber) {
   if (!fiber.dom) {
     // 1.create dom
     const dom = fiber.dom = createDOM(fiber.type);
-    fiber.parent.dom.append(dom);
     // 2.handle props
     setProps(dom, fiber.props);
   }
@@ -76,5 +96,4 @@ function runTask(fiber) {
   return fiber.parent?.sibling;
 }
 
-// TODO: 浏览器闲置时执行。长时间的任务时，无闲置时间时的优化？
 requestIdleCallback(taskScheduler);

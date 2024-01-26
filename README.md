@@ -1,5 +1,15 @@
 # mini-react
 
+### Code style
+
+```bash
+npx eslint . --fix --ext .js,.jsx
+```
+
+### vite
+
+https://vitejs.dev/
+
 ### 自定义jsx解析方法名
 
 在`.jsx`文件头添加`/**@jsx CustomReact.createElementOrOtherName */`
@@ -10,8 +20,3 @@
 /**@jsx CustomReact.createElementOrOtherName */
 ```
 
-### Code style
-
-```bash
-npx eslint . --fix --ext .js,.jsx
-```
