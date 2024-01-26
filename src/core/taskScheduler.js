@@ -40,15 +40,19 @@ function appendToContainer() {
 
 function commitFiber(fiber) {
   if (!fiber) return;
-  fiber.parent.dom.append(fiber.dom);
+  let parent = fiber.parent;
+  while (!parent.dom) {
+    parent = parent.parent;
+  }
+  if (fiber.dom) parent.dom.append(fiber.dom);
   commitFiber(fiber.child);
   commitFiber(fiber.sibling);
 }
 
 function createDOM(type) {
-  return type === ELEMENT_TYPES.TEXT_ELEMENT ?
-    document.createTextNode('') :
-    document.createElement(type);
+  return type === ELEMENT_TYPES.TEXT_ELEMENT
+    ? document.createTextNode('')
+    : document.createElement(type);
 }
 
 function setProps(dom, props) {
@@ -59,9 +63,10 @@ function setProps(dom, props) {
   });
 }
 
-function createLinkedListNodeRelationships(fiber) {
+// 3.Linked lists and index pointers
+function createLinkedListNodeRelationships(fiber, children) {
   let prevChild = null;
-  fiber.props.children.forEach((child, index) => {
+  children.forEach((child, index) => {
     const newFiber = {
       ...child,
       child: null,
@@ -79,21 +84,43 @@ function createLinkedListNodeRelationships(fiber) {
   });
 }
 
-function runTask(fiber) {
+function handleFunctionComponent(fiber) {
+  // TODO: 嵌套组件children不能渲染`<Component>some children</Component>`
+  console.log(fiber.type(fiber.props));
+  const children = [fiber.type(fiber.props)];
+  createLinkedListNodeRelationships(fiber, children);
+}
+
+function handleNormalComponent(fiber) {
   if (!fiber.dom) {
     // 1.create dom
     const dom = fiber.dom = createDOM(fiber.type);
     // 2.handle props
     setProps(dom, fiber.props);
   }
-
   // 3.Linked lists and index pointers
-  createLinkedListNodeRelationships(fiber);
+  const children = fiber.props.children;
+  createLinkedListNodeRelationships(fiber, children);
+}
+
+function runTask(fiber) {
+  if (!fiber.props) {
+    fiber.props = { children: [] };
+  }
+  const isFunctionComponent = typeof fiber.type === 'function';
+  if (isFunctionComponent) {
+    handleFunctionComponent(fiber);
+  } else {
+    handleNormalComponent(fiber);
+  }
 
   // 4.Return next task
   if (fiber.child) return fiber.child;
-  if (fiber.sibling) return fiber.sibling;
-  return fiber.parent?.sibling;
+  let nextFiber = fiber;
+  while (nextFiber) {
+    if (nextFiber.sibling) return nextFiber.sibling;
+    nextFiber = nextFiber.parent;
+  }
 }
 
 requestIdleCallback(taskScheduler);

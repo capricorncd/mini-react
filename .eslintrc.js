@@ -37,7 +37,7 @@ module.exports = {
     "object-curly-newline": ["error", { consistent: true, multiline: true }],
     // https://eslint.org/docs/latest/rules/object-curly-spacing
     "object-curly-spacing": ["error", "always"],
-    "operator-linebreak": ["error", "after"],
+    "operator-linebreak": ["error", "before"],
     "quote-props": ["error", "consistent-as-needed"],
     "semi": ["error", "always"],
     "semi-spacing": "error",

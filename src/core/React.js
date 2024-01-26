@@ -18,7 +18,8 @@ export function createElement(type, props, ...children) {
     props: {
       ...props,
       children: children.map(child => {
-        return typeof child === 'string' ? createTextNode(child) : child;
+        const isTextType = typeof child === 'string' || typeof child === 'number';
+        return isTextType ? createTextNode(child) : child;
       })
     },
   };
