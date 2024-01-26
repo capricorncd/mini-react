@@ -66,27 +66,28 @@ function setProps(dom, props) {
 // 3.Linked lists and index pointers
 function createLinkedListNodeRelationships(fiber, children) {
   let prevChild = null;
-  children.forEach((child, index) => {
-    const newFiber = {
-      ...child,
-      child: null,
-      parent: fiber,
-      sibling: null,
-      dom: null,
-    };
+  children
+    // fix: children cannot be rendered, `<Component>some children</Component>`
+    .flat()
+    .forEach((child, index) => {
+      const newFiber = {
+        ...child,
+        child: null,
+        parent: fiber,
+        sibling: null,
+        dom: null,
+      };
 
-    if (index === 0) {
-      fiber.child = newFiber;
-    } else {
-      prevChild.sibling = newFiber;
-    }
-    prevChild = newFiber;
-  });
+      if (index === 0) {
+        fiber.child = newFiber;
+      } else {
+        prevChild.sibling = newFiber;
+      }
+      prevChild = newFiber;
+    });
 }
 
 function handleFunctionComponent(fiber) {
-  // TODO: 嵌套组件children不能渲染`<Component>some children</Component>`
-  console.log(fiber.type(fiber.props));
   const children = [fiber.type(fiber.props)];
   createLinkedListNodeRelationships(fiber, children);
 }
@@ -94,9 +95,9 @@ function handleFunctionComponent(fiber) {
 function handleNormalComponent(fiber) {
   if (!fiber.dom) {
     // 1.create dom
-    const dom = fiber.dom = createDOM(fiber.type);
+    fiber.dom = createDOM(fiber.type);
     // 2.handle props
-    setProps(dom, fiber.props);
+    setProps(fiber.dom, fiber.props);
   }
   // 3.Linked lists and index pointers
   const children = fiber.props.children;

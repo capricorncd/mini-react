@@ -16,17 +16,16 @@ function App() {
 
 // eslint-disable-next-line react/prop-types
 function TextComponent({ value }) {
-  return <section>Text: {value ?? ''}</section>;
+  return <p>Text: {value ?? ''}</p>;
 }
 
-// TODO: {children}没被渲染
 // eslint-disable-next-line react/prop-types
 function Child({ count, children }) {
   return (
-    <p>
+    <section>
       {count} {children}
-      <TextComponent />
-    </p>
+      <TextComponent value={count} />
+    </section>
   );
 }
 
