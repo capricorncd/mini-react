@@ -147,6 +147,12 @@ function reconcileChildren(fiber, children) {
         prevChild.sibling = newFiber;
       }
       prevChild = newFiber;
+
+      // 删除多余的old node
+      while (oldFiber) {
+        deletionList.push(oldFiber);
+        oldFiber = oldFiber.sibling;
+      }
     });
 }
 

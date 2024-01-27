@@ -16,10 +16,20 @@ function App() {
     </div>);
 }
 
-function ToggleA() {
-  return <div style="color:green">Toggle A</div>;
-}
-const ToggleB = <section style="color:red">Toggle B</section>;
+// function ToggleA() {
+//   return (
+//     <div style="color:green">
+//       Toggle A
+//       <strong style="margin-left:0.5em;">Strong Child</strong>
+//     </div>
+//   );
+// }
+const ToggleA = (<div>
+  ToggleA
+  <div>ToggleA Child1</div>
+  <div>ToggleA Child2</div>
+</div>);
+const ToggleB = <div style="color:red">Toggle B</div>;
 
 let count = 0;
 let props = { id: 'testId' };
@@ -36,7 +46,7 @@ function Counter() {
     <div>
       count: <b {...props}>{count}</b>
       <button onClick={handleClick}>Click</button>
-      {isToggleA ? <ToggleA /> : ToggleB}
+      {isToggleA ? ToggleA : ToggleB}
     </div>
   );
 }
