@@ -5,6 +5,7 @@ function App() {
   return (
     <div id="app">
       hello, mini react
+      <Counter />
       <TextComponent value={1000000} />
       <TextComponent value="xxxxx" />
       <Child count={100} />
@@ -12,6 +13,17 @@ function App() {
         px xxxxxxxx
       </Child>
     </div>);
+}
+
+function Counter() {
+  function handleClick(e) {
+    console.log(e);
+  }
+  return (
+    <div>
+      <button onClick={handleClick}>Click</button>
+    </div>
+  );
 }
 
 // eslint-disable-next-line react/prop-types

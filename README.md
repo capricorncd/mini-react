@@ -1,5 +1,12 @@
 # mini-react
 
+```bash
+# Install the dependencies
+npm i
+# Development Server
+npm run dev
+```
+
 ### Code style
 
 ```bash
@@ -10,7 +17,7 @@ npx eslint . --fix --ext .js,.jsx
 
 https://vitejs.dev/
 
-### 自定义jsx解析方法名
+### 自定义vite jsx解析方法名
 
 在`.jsx`文件头添加`/**@jsx CustomReact.createElementOrOtherName */`
 
@@ -20,3 +27,6 @@ https://vitejs.dev/
 /**@jsx CustomReact.createElementOrOtherName */
 ```
 
+### learn
+
+https://learn.cuixueshe.com/
