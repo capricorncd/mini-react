@@ -30,23 +30,28 @@ const ToggleA = (<div>
   <div>ToggleA Child2</div>
 </div>);
 const ToggleB = <div style="color:red">Toggle B</div>;
+const GreenText = <div style="color:green">Green Text</div>;
 
 let count = 0;
 let props = { id: 'testId' };
 let isToggleA = true;
+let showGreenText = true;
 function Counter() {
   function handleClick(e) {
     console.log(e);
     count++;
     props = { id: Math.random() };
     isToggleA = !isToggleA;
+    showGreenText = !showGreenText;
     update();
   }
   return (
     <div>
       count: <b {...props}>{count}</b>
       <button onClick={handleClick}>Click</button>
+      {showGreenText && GreenText}
       {isToggleA ? ToggleA : ToggleB}
+      {showGreenText ? GreenText : null}
     </div>
   );
 }

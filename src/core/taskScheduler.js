@@ -115,7 +115,7 @@ function reconcileChildren(fiber, children) {
     .flat()
     .forEach((child, index) => {
       let newFiber;
-      if (oldFiber?.type === child.type) {
+      if (oldFiber && oldFiber.type === child.type) {
         // update
         newFiber = {
           ...child,
@@ -127,14 +127,17 @@ function reconcileChildren(fiber, children) {
           alternate: oldFiber,
         };
       } else {
-        newFiber = {
-          ...child,
-          child: null,
-          parent: fiber,
-          sibling: null,
-          dom: null,
-          effectType: EFFECT_TYPES.PLACEMENT,
-        };
+        // fix: <undefined></undefined>
+        if (child) {
+          newFiber = {
+            ...child,
+            child: null,
+            parent: fiber,
+            sibling: null,
+            dom: null,
+            effectType: EFFECT_TYPES.PLACEMENT,
+          };
+        }
 
         if (oldFiber) deletionList.push(oldFiber);
       }
@@ -146,7 +149,8 @@ function reconcileChildren(fiber, children) {
       } else {
         prevChild.sibling = newFiber;
       }
-      prevChild = newFiber;
+      // newFiber may be false, such as `{booleanVar && <Component />}`
+      if (newFiber) prevChild = newFiber;
 
       // 删除多余的old node
       while (oldFiber) {
