@@ -16,19 +16,27 @@ function App() {
     </div>);
 }
 
+function ToggleA() {
+  return <div style="color:green">Toggle A</div>;
+}
+const ToggleB = <section style="color:red">Toggle B</section>;
+
 let count = 0;
 let props = { id: 'testId' };
+let isToggleA = true;
 function Counter() {
   function handleClick(e) {
     console.log(e);
     count++;
     props = { id: Math.random() };
+    isToggleA = !isToggleA;
     update();
   }
   return (
     <div>
       count: <b {...props}>{count}</b>
       <button onClick={handleClick}>Click</button>
+      {isToggleA ? <ToggleA /> : ToggleB}
     </div>
   );
 }

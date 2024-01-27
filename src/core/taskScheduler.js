@@ -12,6 +12,8 @@ let nextTaskOfUnit = null;
 let root = null;
 let currentRoot = null;
 
+const deletionList = [];
+
 export function render(el, container) {
   root = {
     dom: container,
@@ -40,7 +42,7 @@ function taskScheduler(idleDeadline) {
   }
   // 所有节点task处理完成，并root存在
   if (!nextTaskOfUnit && root) {
-    appendToContainer();
+    commitRoot();
   }
 
   requestIdleCallback(taskScheduler);
@@ -48,10 +50,12 @@ function taskScheduler(idleDeadline) {
 
 // 浏览器闲置时执行。长时间的任务时，无闲置时间时的优化？
 // 子节点渲染结束后，统一添加到父节点
-function appendToContainer() {
+function commitRoot() {
+  deletionList.forEach(commitDeletion);
   commitFiber(root.child);
   currentRoot = root;
   root = null;
+  deletionList.length = 0;
 }
 
 function commitFiber(fiber) {
@@ -131,6 +135,8 @@ function reconcileChildren(fiber, children) {
           dom: null,
           effectType: EFFECT_TYPES.PLACEMENT,
         };
+
+        if (oldFiber) deletionList.push(oldFiber);
       }
 
       if (oldFiber) oldFiber = oldFiber.sibling;
@@ -182,3 +188,16 @@ function runTask(fiber) {
 }
 
 requestIdleCallback(taskScheduler);
+
+function commitDeletion(fiber) {
+  if (!fiber) return;
+  if (fiber.dom) {
+    let parent = fiber.parent;
+    while (!parent.dom) {
+      parent = parent.parent;
+    }
+    parent.dom.removeChild(fiber.dom);
+  } else {
+    commitDeletion(fiber.child);
+  }
+}
