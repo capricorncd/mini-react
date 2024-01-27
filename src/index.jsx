@@ -1,5 +1,6 @@
 import ReactDOM from './core/ReactDOM';
 import React from './core/React';
+import { update } from './core/taskScheduler';
 
 function App() {
   return (
@@ -15,12 +16,18 @@ function App() {
     </div>);
 }
 
+let count = 0;
+let props = { id: 'testId' };
 function Counter() {
   function handleClick(e) {
     console.log(e);
+    count++;
+    props = { id: Math.random() };
+    update();
   }
   return (
     <div>
+      count: <b {...props}>{count}</b>
       <button onClick={handleClick}>Click</button>
     </div>
   );

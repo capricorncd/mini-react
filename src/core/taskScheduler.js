@@ -1,19 +1,34 @@
 import { ELEMENT_TYPES } from './React';
 
+const EFFECT_TYPES = {
+  UPDATE: 'update',
+  PLACEMENT: 'placement',
+};
+
 // requestIdleCallback
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback
 let nextTaskOfUnit = null;
 
 let root = null;
+let currentRoot = null;
 
 export function render(el, container) {
-  nextTaskOfUnit = {
+  root = {
     dom: container,
     props: {
       children: [el]
-    }
+    },
   };
-  root = nextTaskOfUnit;
+  nextTaskOfUnit = root;
+}
+
+export function update() {
+  root = {
+    dom: currentRoot.dom,
+    props: currentRoot.props,
+    alternate: currentRoot,
+  };
+  nextTaskOfUnit = root;
 }
 
 function taskScheduler(idleDeadline) {
@@ -35,6 +50,7 @@ function taskScheduler(idleDeadline) {
 // 子节点渲染结束后，统一添加到父节点
 function appendToContainer() {
   commitFiber(root.child);
+  currentRoot = root;
   root = null;
 }
 
@@ -44,9 +60,40 @@ function commitFiber(fiber) {
   while (!parent.dom) {
     parent = parent.parent;
   }
-  if (fiber.dom) parent.dom.append(fiber.dom);
+
+  if (fiber.effectType === EFFECT_TYPES.UPDATE) {
+    updateProps(fiber.dom, fiber.props, fiber.alternate?.props);
+  } else if (fiber.effectType === EFFECT_TYPES.PLACEMENT) {
+    if (fiber.dom) parent.dom.append(fiber.dom);
+  }
+
   commitFiber(fiber.child);
   commitFiber(fiber.sibling);
+}
+
+function updateProps(dom, nextProps, prevProps = {}) {
+  // 1. old 有, new 没有: remove
+  Object.keys(prevProps).forEach((key) => {
+    if (key !== 'children') {
+      if (!(key in nextProps)) {
+        dom.removeAttribute(key);
+      }
+    }
+  });
+  // 2. new 有, old 没有: add
+  // 3. new 有, old 有: edit
+  Object.keys(nextProps).forEach((key) => {
+    if (key !== 'children' && nextProps[key] !== prevProps[key]) {
+      // Event: onClick
+      if (/^on[A-Z]\w*$/.test(key)) {
+        const eventType = key.slice(2).toLocaleLowerCase();
+        dom.removeEventListener(eventType, prevProps[key]);
+        dom.addEventListener(eventType, nextProps[key]);
+      } else {
+        dom[key] = nextProps[key];
+      }
+    }
+  });
 }
 
 function createDOM(type) {
@@ -55,36 +102,38 @@ function createDOM(type) {
     : document.createElement(type);
 }
 
-function setProps(dom, props) {
-  Object.keys(props).forEach(key => {
-    if (key !== 'children') {
-      const propsValue = props[key];
-      // Event: onClick
-      if (/^on[A-Z]\w*$/.test(key)) {
-        const eventType = key.slice(2).toLocaleLowerCase();
-        dom.removeEventListener(eventType, propsValue);
-        dom.addEventListener(eventType, propsValue);
-      } else {
-        dom[key] = propsValue;
-      }
-    }
-  });
-}
-
 // 3.Linked lists and index pointers
-function createLinkedListNodeRelationships(fiber, children) {
+function reconcileChildren(fiber, children) {
+  let oldFiber = fiber.alternate?.child;
   let prevChild = null;
   children
     // fix: children cannot be rendered, `<Component>some children</Component>`
     .flat()
     .forEach((child, index) => {
-      const newFiber = {
-        ...child,
-        child: null,
-        parent: fiber,
-        sibling: null,
-        dom: null,
-      };
+      let newFiber;
+      if (oldFiber?.type === child.type) {
+        // update
+        newFiber = {
+          ...child,
+          child: null,
+          parent: fiber,
+          sibling: null,
+          dom: oldFiber.dom,
+          effectType: EFFECT_TYPES.UPDATE,
+          alternate: oldFiber,
+        };
+      } else {
+        newFiber = {
+          ...child,
+          child: null,
+          parent: fiber,
+          sibling: null,
+          dom: null,
+          effectType: EFFECT_TYPES.PLACEMENT,
+        };
+      }
+
+      if (oldFiber) oldFiber = oldFiber.sibling;
 
       if (index === 0) {
         fiber.child = newFiber;
@@ -97,7 +146,7 @@ function createLinkedListNodeRelationships(fiber, children) {
 
 function handleFunctionComponent(fiber) {
   const children = [fiber.type(fiber.props)];
-  createLinkedListNodeRelationships(fiber, children);
+  reconcileChildren(fiber, children);
 }
 
 function handleNormalComponent(fiber) {
@@ -105,11 +154,11 @@ function handleNormalComponent(fiber) {
     // 1.create dom
     fiber.dom = createDOM(fiber.type);
     // 2.handle props
-    setProps(fiber.dom, fiber.props);
+    updateProps(fiber.dom, fiber.props);
   }
   // 3.Linked lists and index pointers
   const children = fiber.props.children;
-  createLinkedListNodeRelationships(fiber, children);
+  reconcileChildren(fiber, children);
 }
 
 function runTask(fiber) {
