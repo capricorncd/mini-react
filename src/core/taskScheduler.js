@@ -11,6 +11,7 @@ let nextTaskOfUnit = null;
 
 let root = null;
 let currentRoot = null;
+let workingFiber = null;
 
 const deletionList = [];
 
@@ -25,12 +26,14 @@ export function render(el, container) {
 }
 
 export function update() {
-  root = {
-    dom: currentRoot.dom,
-    props: currentRoot.props,
-    alternate: currentRoot,
+  let currentFiber = workingFiber;
+  return () => {
+    root = {
+      ...currentFiber,
+      alternate: currentFiber,
+    };
+    nextTaskOfUnit = root;
   };
-  nextTaskOfUnit = root;
 }
 
 function taskScheduler(idleDeadline) {
@@ -38,6 +41,11 @@ function taskScheduler(idleDeadline) {
   while (!shouldYield && nextTaskOfUnit) {
     // run task
     nextTaskOfUnit = runTask(nextTaskOfUnit);
+    // 减少不必要的计算，当前节点的兄弟为nextTaskOfUnit时即终止渲染
+    if (root?.sibling?.type === nextTaskOfUnit?.type) {
+      nextTaskOfUnit = void 0;
+    }
+
     shouldYield = idleDeadline.timeRemaining() < 1;
   }
   // 所有节点task处理完成，并root存在
@@ -161,6 +169,7 @@ function reconcileChildren(fiber, children) {
 }
 
 function handleFunctionComponent(fiber) {
+  workingFiber = fiber;
   const children = [fiber.type(fiber.props)];
   reconcileChildren(fiber, children);
 }

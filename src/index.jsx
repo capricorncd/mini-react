@@ -37,13 +37,15 @@ let props = { id: 'testId' };
 let isToggleA = true;
 let showGreenText = true;
 function Counter() {
+  const updateComponent = update();
+  console.log('Counter');
   function handleClick(e) {
     console.log(e);
     count++;
     props = { id: Math.random() };
     isToggleA = !isToggleA;
     showGreenText = !showGreenText;
-    update();
+    updateComponent();
   }
   return (
     <div>
@@ -58,15 +60,17 @@ function Counter() {
 
 // eslint-disable-next-line react/prop-types
 function TextComponent({ value }) {
+  console.log('TextComponent');
   return <p>Text: {value ?? ''}</p>;
 }
 
 // eslint-disable-next-line react/prop-types
 function Child({ count, children }) {
+  console.log('Child');
   return (
     <section>
       {count} {children}
-      <TextComponent value={count} />
+      {/* <TextComponent value={count} /> */}
     </section>
   );
 }
