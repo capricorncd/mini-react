@@ -9,30 +9,29 @@ const EFFECT_TYPES = {
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback
 let nextTaskOfUnit = null;
 
-let root = null;
-let currentRoot = null;
+let workingRoot = null;
 let workingFiber = null;
 
 const deletionList = [];
 
 export function render(el, container) {
-  root = {
+  workingRoot = {
     dom: container,
     props: {
       children: [el]
     },
   };
-  nextTaskOfUnit = root;
+  nextTaskOfUnit = workingRoot;
 }
 
 export function update() {
   let currentFiber = workingFiber;
   return () => {
-    root = {
+    workingRoot = {
       ...currentFiber,
       alternate: currentFiber,
     };
-    nextTaskOfUnit = root;
+    nextTaskOfUnit = workingRoot;
   };
 }
 
@@ -42,14 +41,14 @@ function taskScheduler(idleDeadline) {
     // run task
     nextTaskOfUnit = runTask(nextTaskOfUnit);
     // 减少不必要的计算，当前节点的兄弟为nextTaskOfUnit时即终止渲染
-    if (root?.sibling?.type === nextTaskOfUnit?.type) {
+    if (workingRoot?.sibling?.type === nextTaskOfUnit?.type) {
       nextTaskOfUnit = void 0;
     }
 
     shouldYield = idleDeadline.timeRemaining() < 1;
   }
-  // 所有节点task处理完成，并root存在
-  if (!nextTaskOfUnit && root) {
+  // 所有节点task处理完成，并workingRoot存在
+  if (!nextTaskOfUnit && workingRoot) {
     commitRoot();
   }
 
@@ -60,9 +59,8 @@ function taskScheduler(idleDeadline) {
 // 子节点渲染结束后，统一添加到父节点
 function commitRoot() {
   deletionList.forEach(commitDeletion);
-  commitFiber(root.child);
-  currentRoot = root;
-  root = null;
+  commitFiber(workingRoot.child);
+  workingRoot = null;
   deletionList.length = 0;
 }
 
