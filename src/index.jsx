@@ -16,6 +16,13 @@ function App() {
 }
 
 function ToggleA() {
+  useEffect(() => {
+    console.log('initial ToggleA');
+    return () => {
+      console.log('cleanup ToggleA');
+    };
+  }, []);
+
   return (
     <div>
       ToggleA

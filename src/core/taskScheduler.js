@@ -222,6 +222,7 @@ function commitDeletion(fiber) {
   } else {
     commitDeletion(fiber.child);
   }
+  fiber.effectHookList?.forEach(effectHook => effectHook.cleanup?.());
 }
 
 let stateHookList;
@@ -265,7 +266,7 @@ export function useState(initialState) {
 }
 
 // 调用时机：在React完成DOM的渲染之后，浏览器完成渲染之前。
-// cleanup：在调用useEffect之前调用，deps为空时不会调用cleanup?
+// cleanup：1.在调用useEffect之前和组件卸载时调用; 2.deps为空时不调用cleanup
 let effectHookList;
 export function useEffect(callback, deps) {
   effectHookList.push({
