@@ -231,7 +231,14 @@ export function useState(initialState) {
 
   const stateHook = {
     state: oldHook ? oldHook.state : initialState,
+    queue: oldHook ? oldHook.queue : [],
   };
+
+  stateHook.queue.forEach(action => {
+    stateHook.state = typeof action === 'function' ? action(stateHook.state) : action;
+  });
+
+  stateHook.queue.length = 0;
 
   stateHookList.push(stateHook);
   stateHookIndex++;
@@ -239,7 +246,11 @@ export function useState(initialState) {
   currentFiber.stateHookList = stateHookList;
 
   function setState(action) {
-    stateHook.state = typeof action === 'function' ? action(stateHook.state) : action;
+    // stateHook.state = typeof action === 'function' ? action(stateHook.state) : action;
+    stateHook.queue.push(action);
+    // ↑统一action类型:
+    // typeof action === 'function' ? action : () => action;
+
     workingRoot = {
       ...currentFiber,
       alternate: currentFiber,
