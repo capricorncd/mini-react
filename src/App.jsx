@@ -7,13 +7,11 @@ export default function App() {
       <Header />
       <main>
         hello, mini react
-        <Counter />
         <TextComponent value={1000000} />
         <TextComponent value="xxxxx" />
         <Child count={100} />
-        <Child count={500}>
-          px xxxxxxxx
-        </Child>
+        <Child count={500}>slot children</Child>
+        <Counter />
       </main>
     </div>);
 }
@@ -35,7 +33,7 @@ function ToggleA() {
   );
 }
 
-const ToggleB = <div style="color:red">Toggle B</div>;
+const ToggleB = <div style="color:red">ToggleB<div>ToggleB Child1</div></div>;
 const GreenText = <div style="color:green">Green Text</div>;
 
 function Counter() {
@@ -46,7 +44,13 @@ function Counter() {
   function handleClick(e) {
     console.log(e);
     setCount((v) => v + 1);
+  }
+
+  function toggleComponent() {
     setIsToggleA(!isToggleA);
+  }
+
+  function toggleGreenText() {
     setShowGreenText(!showGreenText);
   }
 
@@ -66,10 +70,14 @@ function Counter() {
 
   return (
     <div>
+      <p>
+        <button onClick={handleClick}>Count</button>
+        <button onClick={toggleComponent}>Toggle ComponentA</button>
+        <button onClick={toggleGreenText}>Toggle GreenText</button>
+      </p>
       count: <b>{count}</b>
-      <button onClick={handleClick}>Click</button>
-      {showGreenText && GreenText}
       {isToggleA ? <ToggleA /> : ToggleB}
+      {showGreenText && GreenText}
       {showGreenText ? GreenText : null}
     </div>
   );
