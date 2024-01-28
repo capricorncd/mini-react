@@ -264,13 +264,14 @@ export function useState(initialState) {
   return [stateHook.state, setState];
 }
 
-
 // 调用时机：在React完成DOM的渲染之后，浏览器完成渲染之前。
+// cleanup：在调用useEffect之前调用，deps为空时不会调用cleanup?
 let effectHookList;
 export function useEffect(callback, deps) {
   effectHookList.push({
     callback,
     deps,
+    cleanup: null,
   });
 
   workingFiber.effectHookList = effectHookList;
@@ -282,7 +283,9 @@ function commitEffectHooks() {
 
     if (!fiber.alternate) {
       // initial
-      fiber.effectHookList?.forEach(hook => hook.callback());
+      fiber.effectHookList?.forEach(hook => {
+        hook.cleanup = hook.callback();
+      });
     } else {
       // update, deps check
       fiber.effectHookList?.forEach((newHook, index) => {
@@ -292,12 +295,23 @@ function commitEffectHooks() {
         const needUpdate = oldHook?.deps.some((oldValue, i) => {
           return oldValue !== newHook.deps[i];
         });
-        needUpdate && newHook.callback();
+        needUpdate && (newHook.cleanup = newHook.callback());
       });
     }
     run(fiber.child);
     run(fiber.sibling);
   }
 
+  function runCleanup(fiber) {
+    if (!fiber) return;
+    fiber.alternate?.effectHookList?.forEach(hook => {
+      if (hook.deps.length) hook.cleanup?.();
+    });
+
+    runCleanup(fiber.child);
+    runCleanup(fiber.sibling);
+  }
+
+  runCleanup(workingRoot);
   run(workingRoot);
 }

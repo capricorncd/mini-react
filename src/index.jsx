@@ -43,14 +43,14 @@ function Counter() {
   useEffect(() => {
     console.log(`useEffect initial`);
     return () => {
-      console.log('initial useEffect unmount');
+      console.log('cleanup initial');
     };
   }, []);
 
   useEffect(() => {
     console.log(`useEffect count: ${count}`);
     return () => {
-      console.log('count useEffect unmount');
+      console.log('cleanup count');
     };
   }, [count]);
 
