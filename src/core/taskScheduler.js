@@ -5,6 +5,10 @@ const EFFECT_TYPES = {
   PLACEMENT: 'placement',
 };
 
+// svg
+const SVG_NODE_NAMES = ['SVG', 'PATH'];
+const SVG_ATTRIBUTES = ['viewBox', 'd'];
+
 // requestIdleCallback
 // https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback
 let nextTaskOfUnit = null;
@@ -102,7 +106,11 @@ function updateProps(dom, nextProps, prevProps = {}) {
         dom.addEventListener(eventType, nextProps[key]);
       } else {
         if (dom instanceof Element) {
-          dom.setAttribute(key, nextProps[key]);
+          if (SVG_NODE_NAMES.includes(dom.nodeName) && SVG_ATTRIBUTES.includes(key)) {
+            dom.setAttributeNS(null, key, nextProps[key]);
+          } else {
+            dom.setAttribute(key, nextProps[key]);
+          }
         } else {
           dom[key] = nextProps[key];
         }
@@ -114,7 +122,9 @@ function updateProps(dom, nextProps, prevProps = {}) {
 function createDOM(type) {
   return type === ELEMENT_TYPES.TEXT_ELEMENT
     ? document.createTextNode('')
-    : document.createElement(type);
+    : SVG_NODE_NAMES.includes(type.toUpperCase())
+      ? document.createElementNS('http://www.w3.org/2000/svg', type)
+      : document.createElement(type);
 }
 
 // 3.Linked lists and index pointers

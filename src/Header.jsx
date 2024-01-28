@@ -5,7 +5,7 @@ export default function Header() {
     <header>
       <h2>mini-react</h2>
       <a href="https://github.com/capricorncd/mini-react" target="_blank" rel="noreferrer">
-        <GithubIcon /> Github
+        <GithubIcon />
       </a>
     </header>
   );
@@ -19,5 +19,3 @@ function GithubIcon() {
   );
 }
 
-// TODO: svg cannot be displayed
-console.log(GithubIcon());
