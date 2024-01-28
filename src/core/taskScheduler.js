@@ -167,6 +167,9 @@ function reconcileChildren(fiber, children) {
 }
 
 function handleFunctionComponent(fiber) {
+  stateHookList = [];
+  stateHookIndex = 0;
+
   workingFiber = fiber;
   const children = [fiber.type(fiber.props)];
   reconcileChildren(fiber, children);
@@ -217,4 +220,31 @@ function commitDeletion(fiber) {
   } else {
     commitDeletion(fiber.child);
   }
+}
+
+let stateHookList;
+let stateHookIndex;
+
+export function useState(initialState) {
+  const currentFiber = workingFiber;
+  const oldHook = currentFiber.alternate?.stateHookList[stateHookIndex];
+
+  const stateHook = {
+    state: oldHook ? oldHook.state : initialState,
+  };
+
+  stateHookList.push(stateHook);
+  stateHookIndex++;
+
+  currentFiber.stateHookList = stateHookList;
+
+  function setState(action) {
+    stateHook.state = typeof action === 'function' ? action(stateHook.state) : action;
+    workingRoot = {
+      ...currentFiber,
+      alternate: currentFiber,
+    };
+    nextTaskOfUnit = workingRoot;
+  }
+  return [stateHook.state, setState];
 }

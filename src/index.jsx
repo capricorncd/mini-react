@@ -1,6 +1,5 @@
 import ReactDOM from './core/ReactDOM';
-import React from './core/React';
-import { update } from './core/taskScheduler';
+import React, { useState } from './core/React';
 
 function App() {
   return (
@@ -16,43 +15,36 @@ function App() {
     </div>);
 }
 
-// function ToggleA() {
-//   return (
-//     <div style="color:green">
-//       Toggle A
-//       <strong style="margin-left:0.5em;">Strong Child</strong>
-//     </div>
-//   );
-// }
-const ToggleA = (<div>
-  ToggleA
-  <div>ToggleA Child1</div>
-  <div>ToggleA Child2</div>
-</div>);
+function ToggleA() {
+  return (
+    <div>
+      ToggleA
+      <div>ToggleA Child1</div>
+      <div>ToggleA Child2</div>
+    </div>
+  );
+}
+
 const ToggleB = <div style="color:red">Toggle B</div>;
 const GreenText = <div style="color:green">Green Text</div>;
 
-let count = 0;
-let props = { id: 'testId' };
-let isToggleA = true;
-let showGreenText = true;
 function Counter() {
-  const updateComponent = update();
+  const [count, setCount] = useState(0);
+  const [isToggleA, setIsToggleA] = useState(true);
+  const [showGreenText, setShowGreenText] = useState(true);
   console.log('Counter');
   function handleClick(e) {
     console.log(e);
-    count++;
-    props = { id: Math.random() };
-    isToggleA = !isToggleA;
-    showGreenText = !showGreenText;
-    updateComponent();
+    setCount((v) => v + 1);
+    setIsToggleA(!isToggleA);
+    setShowGreenText(!showGreenText);
   }
   return (
     <div>
-      count: <b {...props}>{count}</b>
+      count: <b>{count}</b>
       <button onClick={handleClick}>Click</button>
       {showGreenText && GreenText}
-      {isToggleA ? ToggleA : ToggleB}
+      {isToggleA ? <ToggleA /> : ToggleB}
       {showGreenText ? GreenText : null}
     </div>
   );
