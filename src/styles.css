@@ -1,0 +1,46 @@
+body {
+  margin: 0;
+}
+
+header {
+  display: flex;
+  height: 4em;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  padding: 0 2em;
+}
+
+header a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 2em;
+  color: #fff;
+  opacity: 0.6;
+}
+
+header a:hover {
+  opacity: 0.9;
+} 
+
+header a svg {
+  fill: currentColor;
+  width: 2em;
+  height: 2em;
+}
+
+main {
+  margin: 2em;
+}
+
+button {
+  padding: 0.5em 2em;
+  margin: 0.5em;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+}

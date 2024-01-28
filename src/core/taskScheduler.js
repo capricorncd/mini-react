@@ -101,7 +101,11 @@ function updateProps(dom, nextProps, prevProps = {}) {
         dom.removeEventListener(eventType, prevProps[key]);
         dom.addEventListener(eventType, nextProps[key]);
       } else {
-        dom[key] = nextProps[key];
+        if (dom instanceof Element) {
+          dom.setAttribute(key, nextProps[key]);
+        } else {
+          dom[key] = nextProps[key];
+        }
       }
     }
   });
