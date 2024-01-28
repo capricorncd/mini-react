@@ -5,6 +5,7 @@
   "main": "src/index.jsx",
   "scripts": {
     "dev": "vite",
+    "build": "vite build",
     "test": "vitest"
   },
   "keywords": [],
