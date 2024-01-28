@@ -1,5 +1,5 @@
 import ReactDOM from './core/ReactDOM';
-import React, { useState } from './core/React';
+import React, { useState, useEffect } from './core/React';
 
 function App() {
   return (
@@ -39,6 +39,21 @@ function Counter() {
     setIsToggleA(!isToggleA);
     setShowGreenText(!showGreenText);
   }
+
+  useEffect(() => {
+    console.log(`useEffect initial`);
+    return () => {
+      console.log('initial useEffect unmount');
+    };
+  }, []);
+
+  useEffect(() => {
+    console.log(`useEffect count: ${count}`);
+    return () => {
+      console.log('count useEffect unmount');
+    };
+  }, [count]);
+
   return (
     <div>
       count: <b>{count}</b>

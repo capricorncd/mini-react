@@ -60,6 +60,7 @@ function taskScheduler(idleDeadline) {
 function commitRoot() {
   deletionList.forEach(commitDeletion);
   commitFiber(workingRoot.child);
+  commitEffectHooks();
   workingRoot = null;
   deletionList.length = 0;
 }
@@ -169,6 +170,7 @@ function reconcileChildren(fiber, children) {
 function handleFunctionComponent(fiber) {
   stateHookList = [];
   stateHookIndex = 0;
+  effectHookList = [];
 
   workingFiber = fiber;
   const children = [fiber.type(fiber.props)];
@@ -260,4 +262,42 @@ export function useState(initialState) {
     nextTaskOfUnit = workingRoot;
   }
   return [stateHook.state, setState];
+}
+
+
+// 调用时机：在React完成DOM的渲染之后，浏览器完成渲染之前。
+let effectHookList;
+export function useEffect(callback, deps) {
+  effectHookList.push({
+    callback,
+    deps,
+  });
+
+  workingFiber.effectHookList = effectHookList;
+}
+
+function commitEffectHooks() {
+  function run(fiber) {
+    if (!fiber) return;
+
+    if (!fiber.alternate) {
+      // initial
+      fiber.effectHookList?.forEach(hook => hook.callback());
+    } else {
+      // update, deps check
+      fiber.effectHookList?.forEach((newHook, index) => {
+        if (!newHook.deps.length) return;
+        const oldHook = fiber.alternate?.effectHookList[index];
+        // Does it need to be updated?
+        const needUpdate = oldHook?.deps.some((oldValue, i) => {
+          return oldValue !== newHook.deps[i];
+        });
+        needUpdate && newHook.callback();
+      });
+    }
+    run(fiber.child);
+    run(fiber.sibling);
+  }
+
+  run(workingRoot);
 }

@@ -1,4 +1,4 @@
-export { useState } from './taskScheduler';
+export { useState, useEffect } from './taskScheduler';
 
 export const ELEMENT_TYPES = {
   TEXT_ELEMENT: 'TEXT_ELEMENT',
